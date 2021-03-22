@@ -1,14 +1,27 @@
 import React, { FC } from "react";
-import { TextField, TableCell, Box, Button } from "@material-ui/core";
+import {
+  TextField,
+  TableCell,
+  Box,
+  Button,
+  Typography,
+} from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
 
-import { useBtnStyle, useTextFieldStyle } from "./styles";
+import { BasketContext } from "../../containers/Basket/Basket";
+import {
+  useBtnStyles,
+  useTableCellStyles,
+  useTextFieldStyles,
+  useValidationStyles,
+} from "./Styles";
 
 interface ArticlePageProps {
   name: string;
   price: number;
   hasError: boolean;
   articleQuantity: number;
-  deleteArticle: (id: number) => void;
   id: number;
   changeQuantity: (
     arg: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string
@@ -20,23 +33,24 @@ export const ArticlePage: FC<ArticlePageProps> = ({
   name,
   price,
   id,
-  deleteArticle,
   changeQuantity,
   hasError,
 }) => {
-  const btnClasses = useBtnStyle();
-  const inputClasses = useTextFieldStyle();
+  const btnClasses = useBtnStyles();
+  const inputClasses = useTextFieldStyles();
+  const validationTypography = useValidationStyles();
+  const tableCellClasses = useTableCellStyles();
   return (
     <>
-      <TableCell component="th" scope="row">
+      <TableCell component="th" scope="row" className={tableCellClasses.root}>
         {name}
       </TableCell>
-      <TableCell component="th" scope="row">
-        {price}
+      <TableCell component="th" scope="row" className={tableCellClasses.root}>
+        £{price}
       </TableCell>
       <TableCell component="th" scope="row">
-        <Box display="flex" flexDirection="column">
-          <div>
+        <Box display="flex" flexDirection="column" position="relative">
+          <Box display="flex">
             <TextField
               variant="outlined"
               error={hasError}
@@ -46,41 +60,53 @@ export const ArticlePage: FC<ArticlePageProps> = ({
               onChange={(ev) => changeQuantity(ev)}
             />
             <Button
+              startIcon={
+                <AddIcon style={{ marginLeft: "10px", marginRight: 0 }} />
+              }
               color="primary"
               className={btnClasses.root}
               style={{ backgroundColor: "#00cc99" }}
               variant="contained"
               onClick={() => changeQuantity("add")}
-            >
-              +
-            </Button>
+            />
             <Button
+              startIcon={
+                <RemoveIcon style={{ marginLeft: "10px", marginRight: 0 }} />
+              }
               color="primary"
               className={btnClasses.root}
               style={{ backgroundColor: "orange" }}
               variant="contained"
               onClick={() => changeQuantity("remove")}
-            >
-              -
-            </Button>
-          </div>
-          <Box width="260px" maxWidth="260px" maxHeight="10px" height="10px">
-            {hasError ? "Please enter a number between 1 and 10" : ""}
+            />
+          </Box>
+          <Box position="absolute" top="97%" width="250px" maxWidth="300px">
+            {hasError ? (
+              <Typography color="error" className={validationTypography.root}>
+                Please enter a number between 1 and 10
+              </Typography>
+            ) : (
+              ""
+            )}
           </Box>
         </Box>
       </TableCell>
 
-      <TableCell component="th" scope="row">
-        {(price * articleQuantity).toFixed(2)}
+      <TableCell component="th" scope="row" className={tableCellClasses.root}>
+        £{(price * articleQuantity).toFixed(2)}
       </TableCell>
       <TableCell component="th" scope="row">
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => deleteArticle(id)}
-        >
-          Delete{" "}
-        </Button>
+        <BasketContext.Consumer>
+          {({ deleteArticle }) => (
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={() => deleteArticle(id)}
+            >
+              Delete{" "}
+            </Button>
+          )}
+        </BasketContext.Consumer>
       </TableCell>
     </>
   );

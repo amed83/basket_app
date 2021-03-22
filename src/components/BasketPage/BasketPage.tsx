@@ -13,41 +13,51 @@ import {
   Button,
 } from "@material-ui/core";
 import { FC } from "react";
-import { DataPayloadProps } from "../../containers/Basket/Basket";
+
 import { Article } from "../../containers/Article/Article";
-import { useBoxStyles, useDividerStyles, useGridStyles } from "./Style";
+import { DataPayloadProps } from "../../data/data";
+import {
+  useBoxStyles,
+  useDividerStyles,
+  useGridStyles,
+  useOrderContainerStyles,
+  useReviewOrderStyles,
+  useTableRowStyles,
+  useTableContainerStyles,
+  useTableHeadStyles,
+  useTableHeadCellsStyles,
+  useBuyButtonStyles,
+} from "./Style";
 
 interface BasketPageProps {
   articles: DataPayloadProps[];
-  deleteArticle: (id: number) => void;
   buyProducts: () => void;
-  updateItemQuantity: (id: number, quantity: number) => void;
+  updateBasket: (id: number, quantity: number) => void;
   subTotal: number;
   vat: number;
   total: number;
+  purchaseMessage: string;
 }
 
 export const BasketPage: FC<BasketPageProps> = ({
   articles,
-  deleteArticle,
   buyProducts,
-  updateItemQuantity,
+  updateBasket,
   subTotal,
   vat,
   total,
+  purchaseMessage,
 }) => {
   const gridClasses = useGridStyles();
   const boxClasses = useBoxStyles();
   const dividerClasses = useDividerStyles();
-  const tableContainerStyle = {
-    border: "solid #D0D0D0 2px",
-    borderRadius: "5px",
-  };
-
-  const titleStyle = {
-    backgroundColor: "#D0D0D0",
-    padding: "10px",
-  };
+  const reviewOrderClasses = useReviewOrderStyles();
+  const orderContainerClasses = useOrderContainerStyles();
+  const tableRowClasses = useTableRowStyles();
+  const tableContainerClasses = useTableContainerStyles();
+  const tableHeadClasses = useTableHeadStyles();
+  const tableHeadCellsClasses = useTableHeadCellsStyles();
+  const buyButtonClasses = useBuyButtonStyles();
 
   return (
     <Box className={boxClasses.root}>
@@ -57,47 +67,61 @@ export const BasketPage: FC<BasketPageProps> = ({
         className={gridClasses.root}
         spacing={2}
       >
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Box textAlign="center">
-            <h2>Review Your Order & Complete Checkout</h2>
+            <Typography variant="h4" color="textPrimary">
+              Review Your Order & Complete Checkout
+            </Typography>
           </Box>
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Divider variant="middle" className={dividerClasses.root} />
         </Grid>
-        <Grid item sm={12}>
-          <div style={tableContainerStyle}>
-            <div style={titleStyle}>Review your Order</div>
-            <TableContainer component={Paper}>
+        <Grid item sm={12} xs={10}>
+          <Box className={orderContainerClasses.root}>
+            <Box className={reviewOrderClasses.root}>
+              <Typography variant="h6"> Review your Order </Typography>
+            </Box>
+            <TableContainer
+              component={Paper}
+              className={tableContainerClasses.root}
+            >
               <Table>
-                <TableHead>
+                <TableHead className={tableHeadClasses.root}>
                   <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell>Price</TableCell>
-                    <TableCell align="left">Quantity</TableCell>
-                    <TableCell>Cost</TableCell>
+                    <TableCell className={tableHeadCellsClasses.root}>
+                      Product
+                    </TableCell>
+                    <TableCell className={tableHeadCellsClasses.root}>
+                      Price
+                    </TableCell>
+                    <TableCell
+                      align="left"
+                      className={tableHeadCellsClasses.root}
+                    >
+                      Quantity
+                    </TableCell>
+                    <TableCell className={tableHeadCellsClasses.root}>
+                      Cost
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {articles.map((article) => (
-                    <TableRow key={article.id}>
-                      <Article
-                        {...article}
-                        deleteArticle={deleteArticle}
-                        updateItemQuantity={updateItemQuantity}
-                      />
+                    <TableRow key={article.id} className={tableRowClasses.root}>
+                      <Article {...article} updateBasket={updateBasket} />
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
-          </div>
+          </Box>
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Divider variant="middle" className={dividerClasses.root} />
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Box
             display="flex"
             justifyContent="space-between"
@@ -119,10 +143,10 @@ export const BasketPage: FC<BasketPageProps> = ({
             </Typography>
           </Box>
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Divider variant="middle" className={dividerClasses.root} />
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Box
             display="flex"
             justifyContent="space-between"
@@ -136,20 +160,33 @@ export const BasketPage: FC<BasketPageProps> = ({
             </Typography>
           </Box>
         </Grid>
-        <Grid item sm={12}>
+        <Grid item sm={12} xs={10}>
           <Divider variant="middle" className={dividerClasses.root} />
         </Grid>
         <Grid item sm={12}>
           <Box display="flex" justifyContent="flex-end">
             <Button
+              className={buyButtonClasses.root}
               variant="contained"
-              color="primary"
-              disabled={total === 0}
+              disabled={total === 0 || purchaseMessage === "success"}
               onClick={() => buyProducts()}
             >
               Buy Now
             </Button>
           </Box>
+        </Grid>
+        <Grid item sm={12}>
+          {purchaseMessage &&
+            (purchaseMessage === "success" ? (
+              <Typography variant="h6">
+                Your Order was successfully processed!
+              </Typography>
+            ) : (
+              <Typography color="error" variant="h6">
+                Sorry, there was an error processing your order, please try
+                again.
+              </Typography>
+            ))}
         </Grid>
       </Grid>
     </Box>

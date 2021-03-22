@@ -1,21 +1,19 @@
 import React, { FC, memo, useState, useEffect } from "react";
-import { DataPayloadProps } from "../../containers/Basket/Basket";
-import { createServer } from "miragejs";
 import { inputValidations } from "../../utils/inputValidation";
 import { ArticlePage } from "../../components/Article/ArticlePage";
+import { DataPayloadProps } from "../../data/data";
 
 export interface ArticleProps extends DataPayloadProps {
-  updateItemQuantity: (id: number, quantity: number) => void;
-  deleteArticle: (id: number) => void;
+  updateBasket: (id: number, quantity: number) => void;
 }
 
 export const Article: FC<ArticleProps> = memo(
-  ({ name, quantity, price, id, deleteArticle, updateItemQuantity }) => {
+  ({ name, quantity, price, id, updateBasket }) => {
     const [hasError, setHasError] = useState<boolean>(false);
     const [articleQuantity, setArticleQuantity] = useState<number>(quantity);
 
     useEffect(() => {
-      updateItemQuantity(articleQuantity, id);
+      updateBasket(articleQuantity, id);
     }, [articleQuantity]);
 
     const changeQuantity = (
@@ -58,7 +56,6 @@ export const Article: FC<ArticleProps> = memo(
           price={price}
           hasError={hasError}
           articleQuantity={articleQuantity}
-          deleteArticle={deleteArticle}
           changeQuantity={changeQuantity}
         />
       </>

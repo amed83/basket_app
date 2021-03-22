@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { DataPayloadProps } from "../Basket/Basket";
+import { DataPayloadProps } from "../../data/data";
 
-export const useCalculations = (articles: DataPayloadProps[]) => {
+export const useCalculateTotal = (articles: DataPayloadProps[]) => {
   const [subTotal, setSubTotal] = useState(0);
   const [vat, setVat] = useState(0);
   const [total, setTotal] = useState(0);

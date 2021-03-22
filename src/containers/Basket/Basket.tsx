@@ -1,63 +1,53 @@
-import { FC, useState, useEffect, useCallback } from "react";
-import { useCalculations } from "../customHooks/useCalculations";
+import { FC, useState, useEffect, useCallback, createContext } from "react";
 import { BasketPage } from "../../components/BasketPage/BasketPage";
+import { data, DataPayloadProps } from "../../data/data";
+import { useCalculateTotal } from "../customHooks/useCalculateTotal";
+import { fakeServer } from "../../fakeServer/fakeServer";
 
-import { createServer } from "miragejs";
-export interface DataPayloadProps {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
+interface ContextProps {
+  deleteArticle: (id: number) => void;
 }
 
-const data: DataPayloadProps[] = [
-  {
-    id: 1,
-    name: "Apple",
-    quantity: 2,
-    price: 0.52,
-  },
-  {
-    id: 2,
-    name: "Banana",
-    quantity: 3,
-    price: 0.67,
-  },
-];
-
-export interface ArticlesProps extends DataPayloadProps {
-  error: boolean;
-}
+export const BasketContext = createContext<ContextProps>({
+  deleteArticle: () => {},
+});
 
 export const Basket: FC<{}> = () => {
   const [articles, setArticles] = useState<DataPayloadProps[]>([]);
+  const [purchaseMessage, setPurchaseMessage] = useState<
+    "success" | "error" | ""
+  >("");
+
   useEffect(() => {
-    setArticles(data.map((el) => ({ ...el })));
+    setArticles(data);
   }, []);
 
-  const { total, vat, subTotal } = useCalculations(articles);
+  const { total, vat, subTotal } = useCalculateTotal(articles);
 
-  createServer({
-    routes() {
-      this.post("/api/checkout", () => {
-        return { success: true };
-      });
-    },
-  });
-
-  const buyProducts = () => {
-    fetch("/api/checkout", {
+  const buyProducts = async () => {
+    fakeServer();
+    const response = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ articles, total, vat, subTotal }),
-    })
-      .then((res) => res.json())
-      .then((response) => console.log(" response ", response));
+    });
+
+    response
+      .json()
+      .then((data) => {
+        if (data.success) {
+          return setPurchaseMessage("success");
+        }
+        return setPurchaseMessage("error");
+      })
+      .catch(() => {
+        return setPurchaseMessage("error");
+      });
   };
 
-  const updateItemQuantity = useCallback(
+  const updateBasket = useCallback(
     (newQuantity: number, id: number) => {
       if (articles.length) {
         setArticles(
@@ -75,7 +65,6 @@ export const Basket: FC<{}> = () => {
     },
     [articles]
   );
-  console.log(" RENDER PARENT ");
   const deleteArticle = useCallback(
     (id) => {
       setArticles(articles.filter((article) => article.id !== id));
@@ -84,16 +73,16 @@ export const Basket: FC<{}> = () => {
   );
 
   return (
-    <>
+    <BasketContext.Provider value={{ deleteArticle: deleteArticle }}>
       <BasketPage
         articles={articles}
-        updateItemQuantity={updateItemQuantity}
-        deleteArticle={deleteArticle}
+        updateBasket={updateBasket}
         buyProducts={buyProducts}
         total={total}
         vat={vat}
         subTotal={subTotal}
+        purchaseMessage={purchaseMessage}
       />
-    </>
+    </BasketContext.Provider>
   );
 };
