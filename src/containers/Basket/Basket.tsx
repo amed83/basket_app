@@ -23,7 +23,7 @@ export const Basket: FC<{}> = () => {
   }, []);
 
   const { total, vat, subTotal } = useCalculateTotal(articles);
-  console.log(JSON.stringify({ articles, total, vat, subTotal }));
+
   const buyProducts = async () => {
     fakeServer();
     const response = await fetch("/api/checkout", {
